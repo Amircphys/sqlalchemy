@@ -1,18 +1,19 @@
 from sqlalchemy import create_engine, text, insert
-from models import metadata_obj, WorkersORM
+from models import WorkersORM
 from database import (
     engine_sync,
     engine_async,
     session_factory_sync,
     session_factory_async,
+    Base,
 )
 
 
 def create_tables():
+    Base.metadata.drop_all(engine_sync)
     engine_sync.echo = True
-    metadata_obj.drop_all(engine_sync)
-    metadata_obj.create_all(engine_sync)
-    engine_sync.echo = False
+    Base.metadata.create_all(engine_sync)
+    engine_sync.echo = True
 
 
 # def insert_data():

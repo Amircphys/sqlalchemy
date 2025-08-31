@@ -1,6 +1,7 @@
 import asyncio
+from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, String
 from config import settings
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
@@ -38,5 +39,8 @@ session_factory_async = async_sessionmaker(engine_async)
 #     await session.
 
 
+str_256 = Annotated[str, 256]
+
+
 class Base(DeclarativeBase):
-    pass
+    type_annotation_map = {str_256: String(256)}
