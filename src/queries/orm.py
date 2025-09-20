@@ -9,6 +9,24 @@ from database import (
 )
 
 
+class SyncORM:
+
+    @staticmethod
+    def create_tables():
+        engine_sync.echo = False
+        Base.metadata.drop_all(engine_sync)
+        Base.metadata.create_all(engine_sync)
+        engine_sync.echo = True
+
+    @staticmethod
+    def insert_workers():
+        with session_factory_sync as session:
+            worker_jack = WorkersORM(username="Jack")
+            worker_michael = WorkersORM(username="Michael")
+            session.add_all([worker_jack, worker_mi])
+            session.commit()
+
+
 def create_tables():
     Base.metadata.drop_all(engine_sync)
     engine_sync.echo = True

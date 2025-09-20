@@ -1,6 +1,6 @@
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy import create_engine, text, insert
+from sqlalchemy import create_engine, text, insert, select
 from config import settings
 from models import metadata_obj, workers_table
 
@@ -18,6 +18,44 @@ engine_async = create_async_engine(
     pool_size=5,
     max_overflow=10,
 )
+
+
+class SyncCore:
+
+    @staticmethod
+    def create_tables():
+        engine_sync.echo = False
+        metadata_obj.drop_all(engine_sync)
+        metadata_obj.create_all(engine_sync)
+        engine_sync.echo = True
+
+    @staticmethod
+    def insert_workers():
+        with engine_sync.connect() as conn:
+            stmt = insert(workers_table).values(
+                [
+                    {"username": "Jack"},
+                    {"username": "Michael"},
+                ]
+            )
+            conn.execute(stmt)
+            conn.commit()
+
+    @staticmethod
+    def select_workers():
+        with engine_sync.connect() as conn:
+            query = select(workers_table)
+            result = conn.execute(query)
+            print(result.all())
+
+
+class AsyncCore:
+
+    @staticmethod
+    async def create_tables():
+        async with engine_async.begin() as conn:
+            await conn.run_sync(metadata_obj.drop_all())
+            await conn.run_sync(metadata_obj.create_all())
 
 
 async def get_123():
