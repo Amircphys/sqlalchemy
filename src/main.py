@@ -1,50 +1,32 @@
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import Mapped
-from sqlalchemy import ForeignKey
-from sqlalchemy import String
-from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
-
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 from src.config import settings
+from src.models import Base, User, Address 
+
 
 engine = create_engine(
     url=settings.DATABASE_URL_psycopg,
-    echo=False,
+    echo=True,
     pool_size=5,
     max_overflow=10,
 )
 
-class Base(DeclarativeBase):
-    pass 
-
-class User(Base):
-    __tablename__ = "users"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(20))
-    username: Mapped[str | None] = mapped_column(String(20))
-    addresses: Mapped[list["Address"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
+def create_user(session: Session, name: str, username: str):
+    user = User(
+        name=name,
+        username=username
     )
-    
-    def __str__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, username={self.username!r})"
-    
-    def __repr__(self) -> str:
-        return str(self)
-    
-class Address(Base):
-    __tablename__ = "addresses"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(20))
-    
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship(back_populates="addresses")
-    
+    session.add(user)
+    session.commit()
     
 def main():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+    with Session(engine) as session:
+        create_user(session, "Bob", 'Bob Marly')
+        
+        
     
 if __name__ == "__main__":
     main() 
