@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = "user_account"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(20))
+    name: Mapped[str] = mapped_column(String(20), unique=True)
     username: Mapped[str | None] = mapped_column(String(20))
     addresses: Mapped[list["Address"]] = relationship(
         back_populates="user",
