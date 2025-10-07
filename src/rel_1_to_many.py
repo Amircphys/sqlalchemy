@@ -20,7 +20,9 @@ class Address(BaseModel):
     state: Mapped[str]
     zip_code: Mapped[int]
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    user: Mapped["User"] = relationship(back_populates="address") # back_populates создает двустороннюю связь, позволяя удобно перемещаться между связанными объектами в обе стороны с автоматической синхронизацией.  
+    # back_populates создает двустороннюю связь, позволяя удобно перемещаться между связанными 
+    # объектами в обе стороны с автоматической синхронизацией.  
+    user: Mapped["User"] = relationship(back_populates="address") 
     
     def __repr__(self):
         return f"<Address(id: {self.id}, city: {self.city})>"
