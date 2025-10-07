@@ -27,6 +27,13 @@ class BaseModel(DeclarativeBase):
 #     def __repr__(self):
 #         return f"<Address(id: {self.id}, city: {self.city})>"
 
+class FollowingAssociation(BaseModel):
+    __tablename__ = "following_association"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id")) 
+    following_id: Mapped[int] = mapped_column(ForeignKey("user.id",  ondelete="CASCADE"))
 
 class User(BaseModel): 
     __tablename__ = "user"
@@ -34,8 +41,13 @@ class User(BaseModel):
     name: Mapped[str]
     age: Mapped[int]
     # address: Mapped[list['Address']] = relationship()
-    following_id: Mapped[int] = mapped_column(ForeignKey("user.id",  ondelete="CASCADE"), nullable=True)
-    following = relationship("User", remote_side=[id], uselist=True)
+    # following_id: Mapped[int] = mapped_column(ForeignKey("user.id",  ondelete="CASCADE"), nullable=True)
+    following = relationship(
+        "User", 
+        secondary="following_association",
+        primaryjoin=("FollowingAssociation.user_id==User.id"),
+        secondaryjoin=("FollowingAssociation.following_id==User.id")
+        ) # remote_side=[id], uselist=True
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, age={self.age!r}, following: {[u.name for u in self.following]})"
     
@@ -76,8 +88,10 @@ def main():
 
     user1.following.append(user2)
     user2.following.append(user3)
+    user3.following.append(user1)
     session.add_all([user1, user2, user3])
     session.commit()
+    print(f"{user1.following=}")
         
 if __name__ == "__main__":
     main()
